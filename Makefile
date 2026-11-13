@@ -20,5 +20,8 @@ lint:
 	cd backend && uv run ruff check app tests scripts && uv run ruff format --check app tests scripts
 	cd frontend && npm run lint
 
+seed:               ## Reset the local database and create the demo club
+	cd backend && uv run python -m scripts.seed
+
 build:              ## Production build of the frontend
 	cd frontend && npm run build

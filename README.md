@@ -19,3 +19,11 @@ make dev
 ```
 
 Open http://localhost:5173.
+
+Load the demo club (250 members, six months of bookings, check-ins and match results):
+
+```bash
+make seed
+```
+
+Then sign in with `owner@courtiq.demo`, `desk@courtiq.demo`, `coach@courtiq.demo` or `member@courtiq.demo` (password `courtiq-demo`), or use the demo buttons on the sign-in page.
