@@ -23,16 +23,27 @@ function messageFrom(body: unknown, fallback: string): string {
 export async function api<T>(path: string, options: { method?: string; body?: unknown } = {}): Promise<T> {
   const token = useAuth.getState().token
   const isForm = options.body instanceof FormData
-  const res = await fetch(`/api${path}`, {
+  let res: Response
+  try {
+    res = await fetch(`/api${path}`, {
     method: options.method ?? (options.body ? 'POST' : 'GET'),
     headers: {
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.body && !isForm ? { 'Content-Type': 'application/json' } : {}),
     },
     body: isForm ? (options.body as FormData) : options.body ? JSON.stringify(options.body) : undefined,
-  })
+    })
+  } catch {
+    throw new ApiError(0, "Can't reach CourtIQ. Check your connection and try again.")
+  }
   const text = await res.text()
-  const body = text ? JSON.parse(text) : null
+  let body: unknown = null
+  try {
+    body = text ? JSON.parse(text) : null
+  } catch {
+    // Not JSON: usually a proxy error page because the API isn't running.
+    throw new ApiError(res.status, res.status >= 500 ? "Can't reach the CourtIQ server. Is the API running (make dev)?" : `Unexpected response (${res.status})`)
+  }
   if (!res.ok) {
     if (res.status === 401 && token) useAuth.getState().signOut()
     throw new ApiError(res.status, messageFrom(body, `Request failed (${res.status})`))

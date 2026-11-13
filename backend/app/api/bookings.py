@@ -21,6 +21,7 @@ from app.services.core import (
     create_booking,
     day_bounds,
     load_bookings,
+    notify,
 )
 from app.timeutil import club_now, utcnow
 
@@ -241,6 +242,22 @@ def cancel(
         raise HTTPException(400, "This booking can't be cancelled")
     if user.role not in STAFF_ROLES and booking.start_at <= club_now(club.timezone):
         raise HTTPException(400, "This booking has already started")
+    if booking.type == "clinic" and user.role not in STAFF_ROLES:
+        # Leaving a group clinic frees your spot; the clinic itself goes ahead.
+        booking.players = [p for p in booking.players if p.user_id != user.id]
+        db.commit()
+        return booking_out(load_bookings(db, Booking.id == booking.id)[0])
+    when = booking.start_at.strftime("%a %b %-d, %-I:%M %p")
+    for p in booking.players:
+        if p.user_id != user.id:
+            notify(
+                db,
+                p.user_id,
+                "booking_cancelled",
+                f"Your {booking.court.name} booking on {when} was cancelled",
+                f"Cancelled by {user.full_name}.",
+                "/app",
+            )
     booking.status = "cancelled"
     booking.cancelled_at = utcnow()
     db.flush()

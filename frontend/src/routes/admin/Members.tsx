@@ -139,6 +139,7 @@ export function MemberDetail() {
       qc.invalidateQueries({ queryKey: ['members'] })
     },
   })
+  const reset = useMutation({ mutationFn: () => api<{ temporary_password: string }>(`/members/${id}/reset-password`, { method: 'POST' }) })
   const checkIn = useMutation({
     mutationFn: () => api('/checkin/manual', { body: { user_id: Number(id) } }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['member', id] }),
@@ -154,11 +155,22 @@ export function MemberDetail() {
         title={user.full_name}
         sub={`${user.email}${user.phone ? ` · ${user.phone}` : ''} · NTRP ${user.skill_level.toFixed(1)} · member since ${dayLabel(user.created_at)}`}
         action={
-          <Button variant="secondary" onClick={() => checkIn.mutate()} disabled={checkIn.isPending}>
-            {checkIn.isSuccess ? 'Checked in ✓' : 'Check in manually'}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="ghost" onClick={() => reset.mutate()} disabled={reset.isPending}>
+              Give temporary password
+            </Button>
+            <Button variant="secondary" onClick={() => checkIn.mutate()} disabled={checkIn.isPending}>
+              {checkIn.isSuccess ? 'Checked in ✓' : 'Check in manually'}
+            </Button>
+          </div>
         }
       />
+      {reset.data && (
+        <p className="mb-4 rounded-xl bg-ball-soft p-3 text-sm">
+          Temporary password for {user.full_name}: <code className="rounded bg-white px-1.5 py-0.5 font-bold">{reset.data.temporary_password}</code>. Share it privately; it's shown
+          once.
+        </p>
+      )}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Stat label="Visits (30 days)" value={stats.visits_30d} sub={`${stats.total_visits} all time`} />
         <Stat label="Bookings" value={stats.bookings_total} sub={`${stats.cancellations} cancelled · ${stats.no_shows} no-shows`} />

@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Logo } from '../../components/Shell'
@@ -87,6 +87,8 @@ export function Login() {
 }
 
 function DemoAccounts({ onPick }: { onPick: (email: string) => void }) {
+  const health = useQuery({ queryKey: ['health'], queryFn: () => api<{ demo: boolean }>('/health') })
+  if (!health.data?.demo) return null
   const demos = [
     ['Owner', 'owner@courtiq.demo'],
     ['Front desk', 'desk@courtiq.demo'],
@@ -95,7 +97,7 @@ function DemoAccounts({ onPick }: { onPick: (email: string) => void }) {
   ]
   return (
     <div className="mt-6 rounded-xl border border-line bg-white p-3">
-      <div className="text-xs font-semibold uppercase tracking-wide text-muted">Demo club (after running the seed)</div>
+      <div className="text-xs font-semibold uppercase tracking-wide text-muted">Try the demo club as</div>
       <div className="mt-2 flex flex-wrap gap-2">
         {demos.map(([label, email]) => (
           <Button key={email} type="button" size="sm" variant="secondary" onClick={() => onPick(email)}>
@@ -144,7 +146,9 @@ export function MemberSignup() {
         </Button>
       </form>
       <p className="mt-6 text-sm text-muted">
-        Already a member? <Link className="font-semibold text-court-700" to="/login">Sign in</Link>
+        Did your club already add you? Sign up with the same email to claim your profile.
+        <br />
+        Already have a password? <Link className="font-semibold text-court-700" to="/login">Sign in</Link>
       </p>
     </AuthLayout>
   )

@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { queryClient } from './queryClient'
 
 export type Role = 'owner' | 'staff' | 'coach' | 'member'
 
@@ -51,6 +52,7 @@ function save(token: string | null, user: User | null) {
 export const useAuth = create<AuthState>((set, get) => ({
   ...load(),
   signIn: (token, user) => {
+    queryClient.clear() // never show the previous account's cached data
     save(token, user)
     set({ token, user })
   },
@@ -59,6 +61,7 @@ export const useAuth = create<AuthState>((set, get) => ({
     set({ user })
   },
   signOut: () => {
+    queryClient.clear()
     save(null, null)
     set({ token: null, user: null })
   },

@@ -20,5 +20,5 @@ Tennis club management MVP with explainable AI. Plan and phases: `docs/PLAN.md`.
 - SQLite locally, Supabase Postgres in production via `DATABASE_URL`; tables are created with `create_all`.
 
 ## Commands
-- `make install`, `make dev` (API :8000, web :5173), `make test`, `make lint`, `make seed`, `make train`.
-- Vite proxies `/api` to `API_PORT` (default 8000). In production the API also serves `frontend/dist` (see `Dockerfile`).
+- `make setup`, `make dev` (API :8787, web :5173; override with `API_PORT=`/`WEB_PORT=`), `make test`, `make lint`, `make seed`, `make train`.
+- Vite proxies `/api` to `API_PORT` (default 8787). In production the API also serves `frontend/dist` (see `Dockerfile`).

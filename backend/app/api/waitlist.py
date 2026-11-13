@@ -201,7 +201,9 @@ def queue(
 
 def _own_entry(db: Session, user: User, entry_id: int) -> WaitlistEntry:
     entry = db.get(WaitlistEntry, entry_id)
-    if entry is None or (entry.user_id != user.id and user.role not in STAFF_ROLES):
+    if entry is None or entry.club_id != user.club_id:
+        raise HTTPException(404, "Waitlist entry not found")
+    if entry.user_id != user.id and user.role not in STAFF_ROLES:
         raise HTTPException(404, "Waitlist entry not found")
     return entry
 

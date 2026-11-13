@@ -15,19 +15,24 @@ See [docs/PLAN.md](docs/PLAN.md) for the original plan and [docs/ARTICLE-NOTES.m
 
 ## Run it locally
 
-Requirements: [uv](https://docs.astral.sh/uv/) and Node 22+.
+Works on macOS and Linux (on Windows, use WSL). You need:
+- [uv](https://docs.astral.sh/uv/) for Python. It downloads Python 3.12 by itself.
+- Node 20.19 or newer (Node 22 recommended, see `.nvmrc`).
 
 ```bash
-make install
-make seed      # demo club: 250 members, 6 months of history
-make dev       # API on :8000, web app on :5173
+make setup     # install everything and create the demo club (250 members, 6 months of history)
+make dev       # API on :8787, web app on :5173
 ```
 
-Open http://localhost:5173 and use the demo buttons on the sign-in page, or sign in with `owner@courtiq.demo`, `desk@courtiq.demo`, `coach@courtiq.demo` or `member@courtiq.demo` (password `courtiq-demo`).
+Open the web address Vite prints (usually http://localhost:5173) and use the demo buttons on the sign-in page. Or sign in with `owner@courtiq.demo`, `desk@courtiq.demo`, `coach@courtiq.demo` or `member@courtiq.demo` (password `courtiq-demo`).
 
-The kiosk is at `/kiosk` (sign in as owner or desk). To try a check-in without a camera, copy a member's code from their **My QR code** page into the kiosk's text box.
+- **A port is already taken?** `make dev API_PORT=8790 WEB_PORT=5190`. The API defaults to 8787 because 8000 is often held by other local apps.
+- **Starting your own club instead of the demo:** go to "Set up your club" on the home page. A 5-step wizard covers courts, hours, prices, coaches and your member list.
+- **Imported members** (CSV or added at the desk) claim their profile by signing up with the same email. Staff can also give anyone a temporary password from the member's page.
+- **The kiosk** is at `/kiosk` (sign in as owner or desk). To try a check-in without a camera, copy a member's code from their **My QR code** page into the kiosk's text box.
+- **The demo is generated relative to today.** Run `make seed` again later to refresh it. This resets the local database.
 
-Other commands:
+Run `make help` to see every command:
 
 ```bash
 make test      # backend tests (pytest)

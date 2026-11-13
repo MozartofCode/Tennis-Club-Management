@@ -78,8 +78,15 @@ def register_owner(body: OwnerSignup, db: Session = Depends(get_db)):
 
 @router.post("/register", response_model=AuthOut)
 def register_member(body: MemberSignup, db: Session = Depends(get_db)):
-    if _email_taken(db, body.email):
-        raise HTTPException(409, "An account with this email already exists")
+    existing = db.scalar(select(User).where(User.email == body.email.lower()))
+    if existing is not None:
+        # Members imported from a spreadsheet or added at the desk have no password yet:
+        # signing up with the same email claims that profile instead of failing.
+        if existing.password_hash is None and existing.role == "member":
+            existing.password_hash = hash_password(body.password)
+            db.commit()
+            return AuthOut(token=create_token(existing), user=UserOut.model_validate(existing))
+        raise HTTPException(409, "An account with this email already exists. Try signing in.")
     club_id = body.club_id or db.scalar(select(Club.id).order_by(Club.id).limit(1))
     if club_id is None or db.get(Club, club_id) is None:
         raise HTTPException(404, "That club doesn't exist yet")

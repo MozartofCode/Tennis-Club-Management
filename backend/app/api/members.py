@@ -2,6 +2,7 @@
 
 import csv
 import io
+import secrets
 from datetime import date, datetime, timedelta
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
@@ -21,7 +22,7 @@ from app.models import (
     User,
 )
 from app.schemas import BookingOut, CheckInOut, MembershipOut, UserOut
-from app.security import current_club, new_qr_token, require_staff
+from app.security import current_club, hash_password, new_qr_token, require_staff
 from app.services.core import active_membership, bookings_out, load_bookings
 from app.timeutil import club_now
 
@@ -392,3 +393,22 @@ async def import_members(
         created += 1
     db.commit()
     return ImportResult(created=created, skipped=skipped[:50])
+
+
+class TempPasswordOut(BaseModel):
+    temporary_password: str
+
+
+@router.post("/{member_id}/reset-password", response_model=TempPasswordOut)
+def reset_password(
+    member_id: int,
+    _: User = Depends(require_staff),
+    club: Club = Depends(current_club),
+    db: Session = Depends(get_db),
+):
+    """Give a member a temporary password (e.g. they forgot theirs, or were imported)."""
+    user = _own_member(db, club, member_id)
+    temp = secrets.token_urlsafe(9)
+    user.password_hash = hash_password(temp)
+    db.commit()
+    return TempPasswordOut(temporary_password=temp)

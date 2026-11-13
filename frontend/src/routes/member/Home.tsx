@@ -79,7 +79,7 @@ export function MemberHome() {
                   <div className="flex items-center gap-2">
                     {b.type !== 'casual' && <Badge className="capitalize">{b.type}</Badge>}
                     <Button size="sm" variant="ghost" onClick={() => cancel.mutate(b.id)} disabled={cancel.isPending}>
-                      Cancel
+                      {b.type === 'clinic' ? 'Leave' : 'Cancel'}
                     </Button>
                   </div>
                 </li>

@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import select
 
 from app import jobs
 from app.api import (
@@ -23,7 +24,8 @@ from app.api import (
     waitlist,
 )
 from app.config import REPO_ROOT, get_settings
-from app.db import init_db
+from app.db import SessionLocal, init_db
+from app.models import User
 
 
 @asynccontextmanager
@@ -68,7 +70,9 @@ def create_app() -> FastAPI:
 
     @app.get("/api/health")
     def health():
-        return {"ok": True, "ai": settings.llm_enabled}
+        with SessionLocal() as db:
+            demo = db.scalar(select(User.id).where(User.email == "owner@courtiq.demo"))
+        return {"ok": True, "ai": settings.llm_enabled, "demo": demo is not None}
 
     # In production one container serves the built web app too (see Dockerfile).
     dist = REPO_ROOT / "frontend" / "dist"

@@ -1,5 +1,5 @@
 {
-  "name": "frontend",
+  "name": "courtiq-frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -30,5 +30,8 @@
     "tailwindcss": "^4.3.5",
     "typescript": "~7.0.2",
     "vite": "^8.3.6"
+  },
+  "engines": {
+    "node": ">=20.19"
   }
 }

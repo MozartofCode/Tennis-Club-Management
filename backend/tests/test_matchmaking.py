@@ -117,3 +117,25 @@ def test_clinic_suggestions_target_quiet_hours(client):
 def test_elo_expected_score():
     assert matchmaking.expected(1500, 1500) == 0.5
     assert matchmaking.expected(1700, 1500) > 0.7
+
+
+def test_leaving_a_clinic_keeps_it_running(client):
+    with SessionLocal() as db:
+        seed(db)
+    oh, _ = login(client, "owner@courtiq.demo")
+    s = client.get("/api/clinics/suggestions", headers=oh).json()[0]
+    coach = client.get("/api/club/coaches", headers=oh).json()[0]
+    clinic = client.post(
+        "/api/clinics",
+        json={
+            "court_id": s["court_id"],
+            "start_at": s["start_at"],
+            "coach_id": coach["id"],
+            "title": "Drills",
+        },
+        headers=oh,
+    ).json()
+    mh, me = login(client, "member@courtiq.demo")
+    client.post(f"/api/clinics/{clinic['id']}/join", headers=mh)
+    left = client.post(f"/api/bookings/{clinic['id']}/cancel", headers=mh).json()
+    assert left["status"] == "booked" and left["players"] == []
