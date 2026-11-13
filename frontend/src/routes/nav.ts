@@ -9,6 +9,7 @@ export const adminNav: NavItem[] = [
   { to: '/admin/waitlist', label: 'Waitlist', icon: '⏳' },
   { to: '/admin/retention', label: 'Retention', icon: '♥' },
   { to: '/admin/matchmaking', label: 'Matchmaking', icon: '⇄' },
+  { to: '/admin/analytics', label: 'Analytics', icon: '↗' },
   { to: '/admin/setup', label: 'Club setup', icon: '⚙' },
 ]
 

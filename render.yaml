@@ -1,0 +1,21 @@
+# Render blueprint: one web service from the Dockerfile.
+# Set DATABASE_URL to your Supabase Postgres connection string (session pooler, port 5432).
+services:
+  - type: web
+    name: courtiq
+    runtime: docker
+    plan: starter
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ENVIRONMENT
+        value: production
+      - key: CORS_ORIGINS
+        value: '["https://courtiq.onrender.com"]'
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false

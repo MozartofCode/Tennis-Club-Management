@@ -70,10 +70,10 @@ export function MemberHome() {
                     </div>
                     <div className="text-sm text-muted">
                       {b.court_name}
-                      {b.coach_name && ` · lesson with ${b.coach_name}`}
+                      {b.type === 'clinic' ? ` · ${b.title ?? 'Clinic'} with ${b.coach_name}` : b.coach_name && ` · lesson with ${b.coach_name}`}
                       {b.type === 'match' && ` · match vs ${b.players.filter((p) => p.id !== user?.id).map((p) => p.full_name).join(', ')}`}
                       {' · '}
-                      {money(b.price)}
+                      {money(b.type === 'clinic' ? Math.round(b.price / b.capacity) : b.price)}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">

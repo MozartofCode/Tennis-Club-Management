@@ -6,7 +6,8 @@ Tennis club management MVP with explainable AI. Plan and phases: `docs/PLAN.md`.
 - `backend/`: FastAPI + SQLAlchemy 2 (ORM), managed with uv. Entry `app/main.py`.
   - `app/models.py`: all tables. Every club-owned row has `club_id`.
   - `app/api/`: one router per area, mounted under `/api`.
-  - `app/ai/`: pricing, waitlist, churn, offers, matchmaking. Pure functions where possible so they're unit-testable.
+  - `app/ai/`: demand (forecast), pricing, waitlist, churn, offers (Claude writer), matchmaking. Pure functions where possible so they're unit-testable.
+  - `app/jobs.py`: APScheduler jobs (waitlist sweep each minute, nightly churn, Sunday ladder). Off when `JOBS_ENABLED=false` (tests).
   - `scripts/seed.py`: synthetic demo club. `scripts/train.py`: model metrics.
 - `frontend/`: React 19 + Vite + TS + Tailwind v4 + React Router + TanStack Query + Zustand.
   - `src/routes/{public,admin,member,coach,kiosk}`, shared UI in `src/components/ui.tsx`.
@@ -20,3 +21,4 @@ Tennis club management MVP with explainable AI. Plan and phases: `docs/PLAN.md`.
 
 ## Commands
 - `make install`, `make dev` (API :8000, web :5173), `make test`, `make lint`, `make seed`, `make train`.
+- Vite proxies `/api` to `API_PORT` (default 8000). In production the API also serves `frontend/dist` (see `Dockerfile`).

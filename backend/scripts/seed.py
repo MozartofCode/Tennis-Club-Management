@@ -484,6 +484,7 @@ def seed(db: Session) -> dict:
     db.flush()
 
     _future_waitlist(db, club, sims, occupied, courts, today, hours)
+    _recent_ai_activity(db, club, bookings, sims, now)
     _welcome_notes(db, demo.user)
     db.commit()
 
@@ -609,6 +610,99 @@ def _future_waitlist(db, club, sims, occupied, courts, today, hours):
                 )
 
 
+def _recent_ai_activity(db, club, bookings, sims, now):
+    """Simulated last-30-days activity so the analytics page has something to show.
+
+    Labelled as simulated in the README: some cancelled peak slots were refilled
+    from the waitlist, some matches were arranged by matchmaking, and a handful of
+    retention offers were sent (a few claimed).
+    """
+    from app.models import Offer, WaitlistEntry
+
+    month = now - timedelta(days=30)
+    peak = club.peak_hours
+    regulars = [s for s in sims if s.persona.name in ("regular", "new", "weekend")]
+    taken = {(b.court_id, b.start_at) for b in bookings if b.status != "cancelled"}
+    refills = 0
+    for b in bookings:
+        if b.status != "cancelled" or not (month <= b.start_at < now):
+            continue
+        is_peak = b.start_at.hour in peak["weekend" if b.start_at.weekday() >= 5 else "weekday"]
+        if not is_peak or (b.court_id, b.start_at) in taken or random.random() > 0.6:
+            continue
+        s = random.choice(regulars)
+        refill = Booking(
+            club_id=club.id,
+            court_id=b.court_id,
+            user_id=s.user.id,
+            start_at=b.start_at,
+            end_at=b.end_at,
+            type="casual",
+            status="completed",
+            base_price=b.base_price,
+            price=b.base_price,
+            price_breakdown=[{"label": "Filled from waitlist", "pct": 0}],
+            paid=True,
+            source="waitlist",
+        )
+        refill.created_at = (b.cancelled_at or b.start_at) + timedelta(
+            minutes=random.randint(2, 12)
+        )
+        refill.players = [BookingPlayer(user_id=s.user.id)]
+        db.add(refill)
+        db.flush()
+        db.add(
+            WaitlistEntry(
+                club_id=club.id,
+                user_id=s.user.id,
+                date=b.start_at.date(),
+                start_hour=b.start_at.hour,
+                end_hour=b.start_at.hour,
+                status="accepted",
+                offer_court_id=b.court_id,
+                offer_start_at=b.start_at,
+                offer_price=b.base_price,
+                offers_received=1,
+                booking_id=refill.id,
+                created_at=refill.created_at - timedelta(hours=random.randint(3, 40)),
+                resolved_at=refill.created_at,
+            )
+        )
+        taken.add((b.court_id, b.start_at))
+        refills += 1
+
+    # Matches arranged through matchmaking land more often in quieter hours.
+    for b in bookings:
+        if b.type == "match" and month <= b.start_at < now and b.status == "completed":
+            is_peak = b.start_at.hour in peak["weekend" if b.start_at.weekday() >= 5 else "weekday"]
+            if random.random() < (0.2 if is_peak else 0.6):
+                b.source = "match"
+
+    faders = [s for s in sims if s.persona.name == "fading"][:8]
+    for i, s in enumerate(faders):
+        sent = now - timedelta(days=random.randint(4, 20))
+        offer = Offer(
+            club_id=club.id,
+            user_id=s.user.id,
+            kind="free_session",
+            source="churn",
+            title="Your next court hour is on us",
+            message=(
+                f"Hi {s.user.full_name.split()[0]}, we've missed you on court! Your next court "
+                "hour is on us: book any quiet-hour slot in the next two weeks."
+            ),
+            discount_pct=100,
+            reason="Playing less often",
+            status="redeemed" if i < 3 else "sent",
+            sent_at=sent,
+            redeemed_at=sent + timedelta(days=2) if i < 3 else None,
+        )
+        offer.created_at = sent - timedelta(hours=2)
+        db.add(offer)
+    db.flush()
+    return refills
+
+
 def _welcome_notes(db: Session, user: User) -> None:
     db.add(
         Notification(
@@ -631,6 +725,10 @@ def main() -> None:
     Base.metadata.create_all(engine)
     with SessionLocal() as db:
         stats = seed(db)
+        from app.ai import churn
+
+        result = churn.score_club(db, db.query(Club).first())
+        stats["high_churn_risk"] = result.get("high", 0)
     print("Seeded demo club:")
     for k, v in stats.items():
         print(f"  {k}: {v}")

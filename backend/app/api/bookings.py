@@ -73,11 +73,11 @@ def availability(
         for hour in club_hours(club):
             start_at = datetime.combine(day, datetime.min.time()).replace(hour=hour)
             b = taken.get((court.id, hour))
-            if b is not None:
+            if start_at <= now:
+                status = "past"
+            elif b is not None:
                 mine = any(p.user_id == user.id for p in b.players)
                 status = "mine" if mine else "booked"
-            elif start_at <= now:
-                status = "past"
             elif (court.id, start_at) in holds:
                 status = "offered" if holds[(court.id, start_at)] == user.id else "held"
             else:

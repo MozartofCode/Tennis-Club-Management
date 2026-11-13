@@ -23,5 +23,8 @@ lint:
 seed:               ## Reset the local database and create the demo club
 	cd backend && uv run python -m scripts.seed
 
+train:              ## Print model accuracy and the pricing simulation for the local database
+	cd backend && uv run python -m scripts.train
+
 build:              ## Production build of the frontend
 	cd frontend && npm run build

@@ -18,3 +18,18 @@ def test_seed_builds_a_usable_demo_club(client):
     assert len(members) == 250
     statuses = {m["membership_status"] for m in members}
     assert {"active", "expired", "none"} <= statuses
+
+
+def test_analytics_summarises_the_club(client):
+    with SessionLocal() as db:
+        seed(db)
+    r = client.post(
+        "/api/auth/login", json={"email": "owner@courtiq.demo", "password": DEMO_PASSWORD}
+    )
+    data = client.get("/api/analytics", headers=auth(r.json()["token"])).json()
+    assert len(data["weekly"]) == 12
+    assert data["last_30"]["bookings"] > 100
+    peak = [h for h in data["by_hour"] if h["weekday_peak"]]
+    off = [h for h in data["by_hour"] if not h["weekday_peak"]]
+    assert max(h["weekday"] for h in peak) > max(h["weekday"] for h in off) * 0.9
+    assert data["members"]["total"] == 250

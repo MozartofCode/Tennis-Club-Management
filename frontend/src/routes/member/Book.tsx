@@ -3,7 +3,7 @@ import clsx from 'clsx'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { PriceBreakdown } from '../../components/PriceBreakdown'
-import { Button, ErrorNote, Field, Modal, PageHeader, Select, Spinner } from '../../components/ui'
+import { Button, Empty, ErrorNote, Field, Modal, PageHeader, Select, Spinner } from '../../components/ui'
 import { api } from '../../lib/api'
 import { dateKey, dayLabel, hourLabel, money, timeLabel } from '../../lib/format'
 import type { Alternative, Availability, Cell, Coach } from '../../lib/types'
@@ -50,6 +50,19 @@ export function Book() {
       </div>
       {grid.isLoading ? (
         <Spinner />
+      ) : grid.data && grid.data.cells.every((c) => c.status === 'past') ? (
+        <Empty title="That's it for today">
+          <button
+            className="font-semibold text-court-700"
+            onClick={() => {
+              const d = new Date(day)
+              d.setDate(d.getDate() + 1)
+              setDay(d)
+            }}
+          >
+            See tomorrow's courts →
+          </button>
+        </Empty>
       ) : (
         <div className="space-y-2">
           {grid.data?.hours.map((h) => {
