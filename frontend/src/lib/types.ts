@@ -141,6 +141,7 @@ export interface MemberDetail {
   recent: Booking[]
   check_ins: CheckInRow[]
   stats: Record<string, number>
+  churn: { score: number; band: 'low' | 'medium' | 'high'; reasons: { key: string; text: string }[] } | null
 }
 
 export interface Notification {
@@ -201,4 +202,45 @@ export interface Simulation {
   offpeak_util_flat: number
   offpeak_util_dynamic: number
   by_hour: { hour: number; flat: number; dynamic: number }[]
+}
+
+export interface RiskRow {
+  user_id: number
+  member_name: string
+  email: string
+  skill_level: number
+  score: number
+  band: 'low' | 'medium' | 'high'
+  reasons: { key: string; text: string; weight: number }[]
+  visits_30: number
+  days_since_visit: number
+  membership_end: string | null
+  offer_status: string | null
+  offer_id: number | null
+}
+
+export interface ChurnBoard {
+  rows: RiskRow[]
+  counts: Record<string, number>
+  revenue_at_risk: number
+  model: { kind: string; auc?: number; precision_high?: number; recall_high?: number; training_rows?: number; test_rows?: number; test_churn_rate?: number }
+  computed_at: string | null
+  offers: Record<string, number>
+}
+
+export interface Offer {
+  id: number
+  user_id: number
+  member_name: string
+  kind: string
+  source: 'churn' | 'upsell' | 'manual'
+  title: string
+  message: string
+  discount_pct: number
+  reason: string | null
+  written_by: 'template' | 'claude'
+  status: 'draft' | 'sent' | 'redeemed' | 'dismissed'
+  created_at: string
+  sent_at: string | null
+  redeemed_at: string | null
 }

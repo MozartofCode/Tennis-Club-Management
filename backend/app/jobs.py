@@ -26,12 +26,26 @@ def waitlist_sweep() -> None:
                 log.exception("Waitlist sweep failed for club %s", club.id)
 
 
+def nightly_churn() -> None:
+    from app.ai import churn
+
+    with SessionLocal() as db:
+        for club in db.scalars(select(Club)).all():
+            try:
+                result = churn.score_club(db, club)
+                log.info("Churn scores club=%s %s", club.id, result)
+            except Exception:
+                db.rollback()
+                log.exception("Churn scoring failed for club %s", club.id)
+
+
 def start() -> None:
     global _scheduler
     if _scheduler is not None:
         return
     _scheduler = BackgroundScheduler(timezone="UTC")
     _scheduler.add_job(waitlist_sweep, "interval", minutes=1, id="waitlist", coalesce=True)
+    _scheduler.add_job(nightly_churn, "cron", hour=8, minute=0, id="churn")  # 3-4am US Eastern
     _scheduler.start()
 
 

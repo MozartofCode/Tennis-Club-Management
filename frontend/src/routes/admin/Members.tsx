@@ -144,7 +144,7 @@ export function MemberDetail() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['member', id] }),
   })
   if (detail.isLoading || !detail.data) return <Spinner />
-  const { user, membership, stats, upcoming, recent, check_ins } = detail.data
+  const { user, membership, stats, upcoming, recent, check_ins, churn } = detail.data
   return (
     <div>
       <Link to="/admin/members" className="text-sm font-semibold text-court-700">
@@ -165,6 +165,23 @@ export function MemberDetail() {
         <Stat label="Lessons & clinics" value={stats.lessons} />
         <Stat label="Spend (90 days)" value={money(stats.spend_90d)} />
       </div>
+      {churn && churn.band !== 'low' && (
+        <Card className="mt-4 border-clay-500/30 bg-clay-50">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="font-bold">
+              {churn.band === 'high' ? 'High' : 'Medium'} risk of leaving ({Math.round(churn.score * 100)}%)
+            </h2>
+            <Link to="/admin/retention" className="text-sm font-semibold text-court-700">
+              Retention board →
+            </Link>
+          </div>
+          <ul className="mt-1 list-disc pl-5 text-sm">
+            {churn.reasons.map((r) => (
+              <li key={r.key}>{r.text}</li>
+            ))}
+          </ul>
+        </Card>
+      )}
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
         <Card className="space-y-3">
           <h2 className="font-bold">Membership</h2>

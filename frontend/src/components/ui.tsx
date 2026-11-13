@@ -26,8 +26,22 @@ export function Button({
   )
 }
 
-export function Card({ className, children }: { className?: string; children: ReactNode }) {
-  return <div className={clsx('rounded-2xl border border-line bg-white p-5 shadow-[0_1px_0_rgba(0,0,0,0.03)]', className)}>{children}</div>
+export function Card({ className = '', children }: { className?: string; children: ReactNode }) {
+  // Let a caller's background/border colour replace the defaults instead of fighting them.
+  const customBg = /(^|\s)bg-/.test(className)
+  const customBorder = /(^|\s)border-(?!\d)(?!line)[a-z]/.test(className)
+  return (
+    <div
+      className={clsx(
+        'rounded-2xl border p-5 shadow-[0_1px_0_rgba(0,0,0,0.03)]',
+        !customBg && 'bg-white',
+        !customBorder && 'border-line',
+        className,
+      )}
+    >
+      {children}
+    </div>
+  )
 }
 
 export function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {

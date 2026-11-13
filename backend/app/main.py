@@ -6,7 +6,18 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import jobs
-from app.api import auth, bookings, checkin, club, coach, me, members, pricing, waitlist
+from app.api import (
+    auth,
+    bookings,
+    checkin,
+    club,
+    coach,
+    me,
+    members,
+    pricing,
+    retention,
+    waitlist,
+)
 from app.config import get_settings
 from app.db import init_db
 
@@ -40,6 +51,7 @@ def create_app() -> FastAPI:
         coach.router,
         pricing.router,
         waitlist.router,
+        retention.router,
     ):
         app.include_router(router, prefix="/api")
 

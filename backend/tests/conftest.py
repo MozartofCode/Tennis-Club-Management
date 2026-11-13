@@ -13,9 +13,10 @@ from app.main import app  # noqa: E402
 
 @pytest.fixture()
 def client():
-    from app.ai.demand import clear_cache
+    from app.ai import churn, demand
 
-    clear_cache()
+    demand.clear_cache()
+    churn.clear_cache()
     Base.metadata.drop_all(engine)
     with TestClient(app) as c:
         yield c

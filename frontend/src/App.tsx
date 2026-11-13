@@ -5,6 +5,7 @@ import { Calendar } from './routes/admin/Calendar'
 import { CheckIns } from './routes/admin/CheckIns'
 import { MemberDetail, Members } from './routes/admin/Members'
 import { Pricing } from './routes/admin/Pricing'
+import { Retention } from './routes/admin/Retention'
 import { Waitlist } from './routes/admin/Waitlist'
 import { Setup } from './routes/admin/Setup'
 import { Today } from './routes/admin/Today'
@@ -12,6 +13,7 @@ import { CoachSchedule } from './routes/coach/Schedule'
 import { Kiosk } from './routes/kiosk/Kiosk'
 import { Book } from './routes/member/Book'
 import { MemberHome } from './routes/member/Home'
+import { MemberOffers } from './routes/member/Offers'
 import { Profile } from './routes/member/Profile'
 import { MyQr } from './routes/member/Qr'
 import { adminNav, coachNav, memberNav } from './routes/nav'
@@ -49,6 +51,7 @@ export default function App() {
         <Route path="checkins" element={<CheckIns />} />
         <Route path="pricing" element={<Pricing />} />
         <Route path="waitlist" element={<Waitlist />} />
+        <Route path="retention" element={<Retention />} />
         <Route path="setup" element={<Setup />} />
       </Route>
 
@@ -63,6 +66,7 @@ export default function App() {
         <Route index element={<MemberHome />} />
         <Route path="book" element={<Book />} />
         <Route path="qr" element={<MyQr />} />
+        <Route path="offers" element={<MemberOffers />} />
         <Route path="profile" element={<Profile />} />
       </Route>
 

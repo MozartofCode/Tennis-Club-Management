@@ -149,6 +149,7 @@ class MemberDetail(BaseModel):
     recent: list[BookingOut]
     check_ins: list[CheckInOut]
     stats: dict
+    churn: dict | None = None
 
 
 def _own_member(db: Session, club: Club, member_id: int) -> User:
@@ -195,7 +196,11 @@ def member_detail(
     memberships = db.scalars(
         select(Membership).where(Membership.user_id == user.id).order_by(Membership.start_date)
     ).all()
+    score = _latest_churn(db, [user.id]).get(user.id)
     return MemberDetail(
+        churn={"score": score.score, "band": score.band, "reasons": score.reasons}
+        if score
+        else None,
         user=UserOut.model_validate(user),
         membership=active_membership(db, user.id, now.date()),
         memberships=list(memberships),
