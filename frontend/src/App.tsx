@@ -1,14 +1,20 @@
 import { Route, Routes } from 'react-router-dom'
 import { Guard } from './components/Guard'
 import { Shell } from './components/Shell'
-import { PageHeader } from './components/ui'
-import { Landing } from './routes/public/Landing'
-import { Login, MemberSignup, OwnerSignup } from './routes/public/Auth'
+import { Calendar } from './routes/admin/Calendar'
+import { CheckIns } from './routes/admin/CheckIns'
+import { MemberDetail, Members } from './routes/admin/Members'
+import { Setup } from './routes/admin/Setup'
+import { Today } from './routes/admin/Today'
+import { CoachSchedule } from './routes/coach/Schedule'
+import { Kiosk } from './routes/kiosk/Kiosk'
+import { Book } from './routes/member/Book'
+import { MemberHome } from './routes/member/Home'
+import { Profile } from './routes/member/Profile'
+import { MyQr } from './routes/member/Qr'
 import { adminNav, coachNav, memberNav } from './routes/nav'
-
-function Placeholder({ title }: { title: string }) {
-  return <PageHeader title={title} sub="Coming in the next phase." />
-}
+import { Login, MemberSignup, OwnerSignup } from './routes/public/Auth'
+import { Landing } from './routes/public/Landing'
 
 export default function App() {
   return (
@@ -17,6 +23,14 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/join" element={<MemberSignup />} />
       <Route path="/start" element={<OwnerSignup />} />
+      <Route
+        path="/kiosk"
+        element={
+          <Guard roles={['owner', 'staff']}>
+            <Kiosk />
+          </Guard>
+        }
+      />
 
       <Route
         path="/admin"
@@ -26,8 +40,12 @@ export default function App() {
           </Guard>
         }
       >
-        <Route index element={<Placeholder title="Today" />} />
-        <Route path="*" element={<Placeholder title="Management" />} />
+        <Route index element={<Today />} />
+        <Route path="calendar" element={<Calendar />} />
+        <Route path="members" element={<Members />} />
+        <Route path="members/:id" element={<MemberDetail />} />
+        <Route path="checkins" element={<CheckIns />} />
+        <Route path="setup" element={<Setup />} />
       </Route>
 
       <Route
@@ -38,8 +56,10 @@ export default function App() {
           </Guard>
         }
       >
-        <Route index element={<Placeholder title="Home" />} />
-        <Route path="*" element={<Placeholder title="Member" />} />
+        <Route index element={<MemberHome />} />
+        <Route path="book" element={<Book />} />
+        <Route path="qr" element={<MyQr />} />
+        <Route path="profile" element={<Profile />} />
       </Route>
 
       <Route
@@ -50,7 +70,7 @@ export default function App() {
           </Guard>
         }
       >
-        <Route index element={<Placeholder title="My schedule" />} />
+        <Route index element={<CoachSchedule />} />
       </Route>
 
       <Route path="*" element={<Landing />} />

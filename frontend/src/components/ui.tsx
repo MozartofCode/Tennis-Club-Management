@@ -130,3 +130,39 @@ export function Toggle({ checked, onChange, label }: { checked: boolean; onChang
     </button>
   )
 }
+
+export function Modal({ open, onClose, title, children, wide }: { open: boolean; onClose: () => void; title: string; children: ReactNode; wide?: boolean }) {
+  if (!open) return null
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4" onClick={onClose} role="dialog" aria-modal aria-label={title}>
+      <div
+        className={clsx('max-h-[92vh] w-full overflow-y-auto rounded-t-2xl bg-white p-5 shadow-xl sm:rounded-2xl', wide ? 'sm:max-w-2xl' : 'sm:max-w-md')}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-4 flex items-start justify-between gap-4">
+          <h2 className="text-lg font-bold">{title}</h2>
+          <button className="rounded-lg px-2 text-xl leading-none text-muted hover:bg-stone-100" onClick={onClose} aria-label="Close">
+            ×
+          </button>
+        </div>
+        {children}
+      </div>
+    </div>
+  )
+}
+
+export function Tabs<T extends string>({ value, onChange, options }: { value: T; onChange: (v: T) => void; options: { value: T; label: string }[] }) {
+  return (
+    <div className="inline-flex flex-wrap gap-1 rounded-xl border border-line bg-white p-1">
+      {options.map((o) => (
+        <button
+          key={o.value}
+          onClick={() => onChange(o.value)}
+          className={clsx('rounded-lg px-3 py-1.5 text-sm font-semibold transition', value === o.value ? 'bg-court-800 text-white' : 'text-muted hover:text-ink')}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  )
+}

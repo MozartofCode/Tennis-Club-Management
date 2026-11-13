@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import auth
+from app.api import auth, bookings, checkin, club, coach, me, members
 from app.config import get_settings
 from app.db import init_db
 
@@ -26,7 +26,15 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    for router in (auth.router,):
+    for router in (
+        auth.router,
+        club.router,
+        members.router,
+        bookings.router,
+        checkin.router,
+        me.router,
+        coach.router,
+    ):
         app.include_router(router, prefix="/api")
 
     @app.get("/api/health")
