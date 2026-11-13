@@ -1,0 +1,40 @@
+[project]
+name = "courtiq-backend"
+version = "0.1.0"
+description = "CourtIQ: AI-assisted tennis club management (FastAPI backend)"
+requires-python = ">=3.12"
+dependencies = [
+    "anthropic>=2.8.0",
+    "apscheduler>=3.11.3",
+    "bcrypt>=5.0.0",
+    "fastapi>=0.162.5",
+    "httpx>=0.28.1",
+    "joblib>=1.6.0",
+    "numpy>=2.5.4",
+    "pandas>=3.1.1",
+    "psycopg[binary]>=3.3.9",
+    "pydantic-settings>=2.16.2",
+    "pyjwt>=2.15.1",
+    "python-multipart>=0.0.33",
+    "scikit-learn>=1.9.1",
+    "sqlalchemy>=2",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+    "ruff>=0.17.5",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+# B008: FastAPI's `Depends()` in argument defaults is the framework idiom.
+ignore = ["B008"]

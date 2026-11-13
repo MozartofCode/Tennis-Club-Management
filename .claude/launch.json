@@ -1,0 +1,19 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "api",
+      "runtimeExecutable": "uv",
+      "runtimeArgs": ["run", "--directory", "backend", "uvicorn", "app.main:app", "--port", "8010"],
+      "port": 8010,
+      "autoPort": false
+    },
+    {
+      "name": "web",
+      "runtimeExecutable": "env",
+      "runtimeArgs": ["API_PORT=8010", "npm", "--prefix", "frontend", "run", "dev", "--", "--port", "5180", "--strictPort"],
+      "port": 5180,
+      "autoPort": false
+    }
+  ]
+}
