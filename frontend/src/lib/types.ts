@@ -91,9 +91,11 @@ export interface Cell {
   court_id: number
   hour: number
   start_at: string
-  status: 'free' | 'booked' | 'mine' | 'past'
+  status: 'free' | 'booked' | 'mine' | 'held' | 'offered' | 'past'
   price: number
   base_price: number
+  suggested: number
+  demand: number
   breakdown: PriceLine[]
 }
 
@@ -149,4 +151,54 @@ export interface Notification {
   link: string | null
   read: boolean
   created_at: string
+}
+
+export interface WaitlistEntry {
+  id: number
+  user_id: number
+  member_name: string
+  date: string
+  start_hour: number
+  end_hour: number
+  court_id: number | null
+  status: 'waiting' | 'offered' | 'accepted' | 'declined' | 'expired' | 'left'
+  priority_score: number
+  priority_reasons: string[]
+  offer_court_name: string | null
+  offer_start_at: string | null
+  offer_price: number | null
+  offer_expires_at: string | null
+  created_at: string
+}
+
+export interface Alternative {
+  court_id: number
+  court_name: string
+  start_at: string
+  price: number
+  cheaper: boolean
+}
+
+export interface PricingWeek {
+  mode: Club['pricing_mode']
+  base_price: number
+  days: string[]
+  hours: number[]
+  slots: { date: string; hour: number; forecast: number; booked: number; price: number; suggested: number; reasons: PriceLine[] }[]
+  model: { kind: string; training_rows: number; mae: number | null }
+}
+
+export interface Simulation {
+  weeks: number
+  elasticity: number
+  unmet_at_full: number
+  flat_revenue: number
+  dynamic_revenue: number
+  flat_hours: number
+  dynamic_hours: number
+  peak_util_flat: number
+  peak_util_dynamic: number
+  offpeak_util_flat: number
+  offpeak_util_dynamic: number
+  by_hour: { hour: number; flat: number; dynamic: number }[]
 }

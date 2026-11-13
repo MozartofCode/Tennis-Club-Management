@@ -4,6 +4,8 @@ import { Shell } from './components/Shell'
 import { Calendar } from './routes/admin/Calendar'
 import { CheckIns } from './routes/admin/CheckIns'
 import { MemberDetail, Members } from './routes/admin/Members'
+import { Pricing } from './routes/admin/Pricing'
+import { Waitlist } from './routes/admin/Waitlist'
 import { Setup } from './routes/admin/Setup'
 import { Today } from './routes/admin/Today'
 import { CoachSchedule } from './routes/coach/Schedule'
@@ -45,6 +47,8 @@ export default function App() {
         <Route path="members" element={<Members />} />
         <Route path="members/:id" element={<MemberDetail />} />
         <Route path="checkins" element={<CheckIns />} />
+        <Route path="pricing" element={<Pricing />} />
+        <Route path="waitlist" element={<Waitlist />} />
         <Route path="setup" element={<Setup />} />
       </Route>
 

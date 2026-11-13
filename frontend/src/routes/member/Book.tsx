@@ -6,7 +6,7 @@ import { PriceBreakdown } from '../../components/PriceBreakdown'
 import { Button, ErrorNote, Field, Modal, PageHeader, Select, Spinner } from '../../components/ui'
 import { api } from '../../lib/api'
 import { dateKey, dayLabel, hourLabel, money, timeLabel } from '../../lib/format'
-import type { Availability, Cell, Coach } from '../../lib/types'
+import type { Alternative, Availability, Cell, Coach } from '../../lib/types'
 
 function nextDays(n: number): Date[] {
   return Array.from({ length: n }, (_, i) => {
@@ -64,6 +64,7 @@ export function Book() {
                 <div className="w-14 font-display text-lg font-bold">{hourLabel(h)}</div>
                 <div className="flex flex-1 flex-wrap gap-1.5">
                   {mine && <span className="rounded-lg bg-ball px-2 py-1 text-xs font-bold text-court-900">Your booking · {courtName(mine.court_id)}</span>}
+                  {!mine && cells.some((c) => c.status === 'offered') && <span className="rounded-lg bg-ball-soft px-2 py-1 text-xs font-bold text-court-900">Held for you, see Home</span>}
                   {!mine &&
                     free.map((c) => (
                       <button key={c.court_id} onClick={() => setPick(c)} className="rounded-lg border border-court-200 bg-court-50 px-2 py-1 text-xs font-semibold text-court-800 hover:bg-court-100">
@@ -76,7 +77,7 @@ export function Book() {
                     </button>
                   )}
                 </div>
-                {best && (
+                {best && !mine && (
                   <div className="text-right">
                     <div className={clsx('font-bold', best.price <= cheapest && 'text-court-600')}>{money(best.price)}</div>
                     {best.breakdown.some((b) => b.pct < 0 && !b.label.includes('member')) && <div className="text-xs text-court-600">off-peak deal</div>}
@@ -138,14 +139,69 @@ function ConfirmBooking({ cell, court, onClose, dayKey }: { cell: Cell; court: s
 }
 
 export function WaitlistJoin({ day, hour, onClose }: { day: string; hour: number; onClose: () => void }) {
+  const qc = useQueryClient()
+  const navigate = useNavigate()
+  const [flex, setFlex] = useState(0)
+  const alts = useQuery({ queryKey: ['alternatives', day, hour], queryFn: () => api<Alternative[]>(`/waitlist/alternatives?day=${day}&hour=${hour}`) })
+  const join = useMutation({
+    mutationFn: () => api<{ position: number }>('/waitlist', { body: { date: day, start_hour: Math.max(0, hour - flex), end_hour: hour + flex } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['my-waitlist'] }),
+  })
+  const book = useMutation({
+    mutationFn: (a: Alternative) => api('/bookings', { body: { court_id: a.court_id, start_at: a.start_at } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['availability'] })
+      navigate('/app')
+    },
+  })
   return (
-    <Modal open onClose={onClose} title="This hour is full">
-      <p className="text-sm text-muted">
-        All courts are booked at {hourLabel(hour)} on {dayLabel(`${day}T00:00:00`)}. Pick another time for now.
-      </p>
-      <Button className="mt-4 w-full" variant="secondary" onClick={onClose}>
-        OK
-      </Button>
+    <Modal open onClose={onClose} title={`${hourLabel(hour)} on ${dayLabel(`${day}T00:00:00`)} is full`}>
+      {join.data ? (
+        <div className="space-y-3 text-sm">
+          <p className="rounded-xl bg-court-50 p-3">
+            You're <b>#{join.data.position}</b> on the waitlist. If a court opens up we'll hold it for you and send a notification.
+          </p>
+          <Button className="w-full" onClick={onClose}>
+            Done
+          </Button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <Field label="Join the waitlist">
+            <Select value={flex} onChange={(e) => setFlex(Number(e.target.value))}>
+              <option value={0}>Only {hourLabel(hour)}</option>
+              <option value={1}>
+                Anytime {hourLabel(hour - 1)}-{hourLabel(hour + 2)}
+              </option>
+            </Select>
+          </Field>
+          <ErrorNote error={join.error} />
+          <Button className="w-full" disabled={join.isPending} onClick={() => join.mutate()}>
+            Join waitlist
+          </Button>
+          {(alts.data?.length ?? 0) > 0 && (
+            <div>
+              <div className="mb-2 text-sm font-semibold">Or book one of these now</div>
+              <ul className="space-y-2">
+                {alts.data!.map((a) => (
+                  <li key={`${a.court_id}-${a.start_at}`}>
+                    <button
+                      onClick={() => book.mutate(a)}
+                      className="flex w-full items-center justify-between rounded-xl border border-line px-3 py-2 text-left text-sm hover:bg-court-50"
+                    >
+                      <span>
+                        {dayLabel(a.start_at)}, {timeLabel(a.start_at)} · {a.court_name}
+                      </span>
+                      <span className={clsx('font-semibold', a.cheaper && 'text-court-600')}>{money(a.price)}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <ErrorNote error={book.error} />
+            </div>
+          )}
+        </div>
+      )}
     </Modal>
   )
 }

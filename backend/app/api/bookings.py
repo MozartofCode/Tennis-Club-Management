@@ -7,7 +7,9 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.ai import pricing
 from app.ai.pricing import quote
+from app.ai.waitlist import active_holds, process_slot
 from app.db import get_db
 from app.models import Booking, BookingPlayer, Club, Coach, Court, User
 from app.schemas import BookingOut
@@ -29,9 +31,11 @@ class Cell(BaseModel):
     court_id: int
     hour: int
     start_at: datetime
-    status: str  # free|booked|mine|past
+    status: str  # free|booked|mine|held|offered|past
     price: float
     base_price: float
+    suggested: float
+    demand: float
     breakdown: list
 
 
@@ -61,7 +65,9 @@ def availability(
         Booking.status.in_(("booked", "completed")),
     )
     taken = {(b.court_id, b.start_at.hour): b for b in booked}
-    now = club_now(club.timezone)
+    holds = active_holds(db, club, day)
+    ctx = pricing.context(db, club, user, [day])
+    now = ctx.now
     cells = []
     for court in courts:
         for hour in club_hours(club):
@@ -72,9 +78,11 @@ def availability(
                 status = "mine" if mine else "booked"
             elif start_at <= now:
                 status = "past"
+            elif (court.id, start_at) in holds:
+                status = "offered" if holds[(court.id, start_at)] == user.id else "held"
             else:
                 status = "free"
-            q = quote(db, club, court, start_at, user)
+            q = pricing.price_slot(ctx, court, start_at)
             cells.append(
                 Cell(
                     court_id=court.id,
@@ -83,6 +91,8 @@ def availability(
                     status=status,
                     price=q.price,
                     base_price=q.base_price,
+                    suggested=q.suggested,
+                    demand=q.demand,
                     breakdown=q.breakdown,
                 )
             )
@@ -240,7 +250,8 @@ def cancel(
 
 
 def on_slot_freed(db: Session, club: Club, booking: Booking) -> None:
-    """Called whenever a booked slot opens up again. The waitlist hooks in here."""
+    """Called whenever a booked slot opens up again: offer it to the waitlist."""
+    process_slot(db, club, booking.court, booking.start_at)
 
 
 class BookingPatch(BaseModel):

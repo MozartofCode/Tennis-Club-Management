@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { Badge, Button, Card, Empty, PageHeader, Spinner } from '../../components/ui'
+import { WaitlistOffers } from '../../components/WaitlistOffers'
 import { api } from '../../lib/api'
 import { useAuth } from '../../lib/auth'
 import { dayLabel, money, relativeDays, timeLabel } from '../../lib/format'
@@ -29,9 +30,13 @@ export function MemberHome() {
           </Link>
         }
       />
-      {unread.length > 0 && (
+      <WaitlistOffers />
+      {unread.filter((n) => n.kind !== 'waitlist_offer').length > 0 && (
         <div className="mb-4 space-y-2">
-          {unread.slice(0, 3).map((n) => (
+          {unread
+            .filter((n) => n.kind !== 'waitlist_offer')
+            .slice(0, 3)
+            .map((n) => (
             <Card key={n.id} className="border-ball bg-ball-soft p-4">
               <div className="font-bold">{n.title}</div>
               {n.body && <div className="text-sm">{n.body}</div>}

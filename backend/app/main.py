@@ -5,7 +5,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import auth, bookings, checkin, club, coach, me, members
+from app import jobs
+from app.api import auth, bookings, checkin, club, coach, me, members, pricing, waitlist
 from app.config import get_settings
 from app.db import init_db
 
@@ -13,7 +14,10 @@ from app.db import init_db
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     init_db()
+    if get_settings().jobs_enabled:
+        jobs.start()
     yield
+    jobs.stop()
 
 
 def create_app() -> FastAPI:
@@ -34,6 +38,8 @@ def create_app() -> FastAPI:
         checkin.router,
         me.router,
         coach.router,
+        pricing.router,
+        waitlist.router,
     ):
         app.include_router(router, prefix="/api")
 

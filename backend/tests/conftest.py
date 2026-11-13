@@ -13,6 +13,9 @@ from app.main import app  # noqa: E402
 
 @pytest.fixture()
 def client():
+    from app.ai.demand import clear_cache
+
+    clear_cache()
     Base.metadata.drop_all(engine)
     with TestClient(app) as c:
         yield c
@@ -70,3 +73,17 @@ def future_slot(hour: int = 18, days: int = 2) -> str:
     from datetime import date, timedelta
 
     return f"{(date.today() + timedelta(days=days)).isoformat()}T{hour:02d}:00:00"
+
+
+def make_member(client, owner, email: str, name: str = "Extra Member") -> dict:
+    r = client.post(
+        "/api/auth/register",
+        json={
+            "email": email,
+            "password": "password123",
+            "full_name": name,
+            "club_id": owner["user"]["club_id"],
+        },
+    )
+    assert r.status_code == 200, r.text
+    return r.json()

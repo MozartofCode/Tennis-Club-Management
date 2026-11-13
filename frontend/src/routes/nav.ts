@@ -5,6 +5,8 @@ export const adminNav: NavItem[] = [
   { to: '/admin/calendar', label: 'Court calendar', icon: '▦' },
   { to: '/admin/members', label: 'Members', icon: '☺' },
   { to: '/admin/checkins', label: 'Check-ins', icon: '✓' },
+  { to: '/admin/pricing', label: 'Dynamic pricing', icon: '$' },
+  { to: '/admin/waitlist', label: 'Waitlist', icon: '⏳' },
   { to: '/admin/setup', label: 'Club setup', icon: '⚙' },
 ]
 

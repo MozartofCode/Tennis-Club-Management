@@ -15,6 +15,7 @@ from app.models import (
     Membership,
     Notification,
     User,
+    WaitlistEntry,
 )
 from app.schemas import BookingOut, PlayerOut
 
@@ -61,6 +62,17 @@ def slot_taken(db: Session, court_id: int, start_at: datetime) -> bool:
     )
 
 
+def hold_owner(db: Session, court_id: int, start_at: datetime) -> int | None:
+    """The member a freed slot is currently offered to, if any."""
+    return db.scalar(
+        select(WaitlistEntry.user_id).where(
+            WaitlistEntry.status == "offered",
+            WaitlistEntry.offer_court_id == court_id,
+            WaitlistEntry.offer_start_at == start_at,
+        )
+    )
+
+
 def member_busy(db: Session, user_id: int, start_at: datetime) -> bool:
     return (
         db.scalar(
@@ -94,6 +106,9 @@ def create_booking(
     capacity: int = 4,
 ) -> Booking:
     validate_slot(club, court, start_at)
+    held_for = hold_owner(db, court.id, start_at)
+    if held_for is not None and source != "waitlist":
+        raise HTTPException(409, "That slot is on hold for someone on the waitlist.")
     if slot_taken(db, court.id, start_at):
         raise HTTPException(
             409, "That court was just booked. Pick another slot or join the waitlist."

@@ -104,6 +104,8 @@ export function Calendar() {
                           </button>
                         ) : cell?.status === 'past' ? (
                           <div className="h-full rounded-lg bg-stone-50" />
+                        ) : cell?.status === 'held' ? (
+                          <div className="flex h-full items-center rounded-lg border border-dashed border-ball bg-ball-soft px-2 text-xs font-semibold text-court-800">On hold for waitlist</div>
                         ) : (
                           <button
                             onClick={() => setNewSlot({ court_id: c.id, start_at: cell!.start_at, court: c.name })}
