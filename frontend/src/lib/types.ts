@@ -244,3 +244,57 @@ export interface Offer {
   sent_at: string | null
   redeemed_at: string | null
 }
+
+export interface MatchSlot {
+  start_at: string
+  court_id: number
+  court_name: string
+  price: number
+  per_person: number
+  quiet: boolean
+}
+
+export interface Suggestion {
+  user_id: number
+  full_name: string
+  skill_level: number
+  play_style: string | null
+  score: number
+  reasons: string[]
+  slots: MatchSlot[]
+}
+
+export interface MatchRow {
+  id: number
+  status: string
+  source: 'member' | 'league'
+  requester_id: number
+  requester_name: string
+  opponent_id: number
+  opponent_name: string
+  proposed_start: string
+  court_name: string | null
+  booking_id: number | null
+  reasons: string[]
+  winner_id: number | null
+  score_text: string | null
+}
+
+export interface MyMatches {
+  incoming: MatchRow[]
+  outgoing: MatchRow[]
+  upcoming: MatchRow[]
+  to_report: MatchRow[]
+  results: MatchRow[]
+}
+
+export interface ClinicSuggestion {
+  start_at: string
+  court_id: number
+  court_name: string
+  level: string
+  demand: number
+  members: { id: number; name: string; level: number }[]
+  member_count: number
+  reason: string
+}

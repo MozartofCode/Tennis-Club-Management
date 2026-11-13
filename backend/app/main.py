@@ -12,6 +12,7 @@ from app.api import (
     checkin,
     club,
     coach,
+    matches,
     me,
     members,
     pricing,
@@ -52,6 +53,7 @@ def create_app() -> FastAPI:
         pricing.router,
         waitlist.router,
         retention.router,
+        matches.router,
     ):
         app.include_router(router, prefix="/api")
 

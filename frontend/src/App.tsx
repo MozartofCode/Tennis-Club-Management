@@ -4,6 +4,7 @@ import { Shell } from './components/Shell'
 import { Calendar } from './routes/admin/Calendar'
 import { CheckIns } from './routes/admin/CheckIns'
 import { MemberDetail, Members } from './routes/admin/Members'
+import { Matchmaking } from './routes/admin/Matchmaking'
 import { Pricing } from './routes/admin/Pricing'
 import { Retention } from './routes/admin/Retention'
 import { Waitlist } from './routes/admin/Waitlist'
@@ -13,6 +14,7 @@ import { CoachSchedule } from './routes/coach/Schedule'
 import { Kiosk } from './routes/kiosk/Kiosk'
 import { Book } from './routes/member/Book'
 import { MemberHome } from './routes/member/Home'
+import { Matches } from './routes/member/Matches'
 import { MemberOffers } from './routes/member/Offers'
 import { Profile } from './routes/member/Profile'
 import { MyQr } from './routes/member/Qr'
@@ -52,6 +54,7 @@ export default function App() {
         <Route path="pricing" element={<Pricing />} />
         <Route path="waitlist" element={<Waitlist />} />
         <Route path="retention" element={<Retention />} />
+        <Route path="matchmaking" element={<Matchmaking />} />
         <Route path="setup" element={<Setup />} />
       </Route>
 
@@ -65,6 +68,7 @@ export default function App() {
       >
         <Route index element={<MemberHome />} />
         <Route path="book" element={<Book />} />
+        <Route path="matches" element={<Matches />} />
         <Route path="qr" element={<MyQr />} />
         <Route path="offers" element={<MemberOffers />} />
         <Route path="profile" element={<Profile />} />
